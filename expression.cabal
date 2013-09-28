@@ -1,0 +1,37 @@
+name:                expression
+version:             0.1.0.0
+synopsis:            Functional expressions
+-- description:         
+license:             BSD3
+license-file:        LICENSE
+author:              Ashley Yakeley
+maintainer:          Ashley Yakeley <ashley@semantic.org>
+copyright:           Ashley Yakeley
+category:            Language
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+    hs-source-dirs: src
+    exposed-modules:
+        Language.Expression.Expression
+        Language.Expression.Mono
+        Language.Expression.Regular
+    other-modules:
+        Import
+    build-depends:  
+        base ==4.6.*,
+        transformers >= 0.3,
+        witness == 0.2.*
+    extensions:         
+        NoImplicitPrelude 
+        RankNTypes
+        KindSignatures
+        GADTs
+        ConstraintKinds
+        TypeFamilies
+        MultiParamTypeClasses
+        FlexibleInstances
+        TypeSynonymInstances
+    ghc-options: -Wall
+
