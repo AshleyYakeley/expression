@@ -21,8 +21,8 @@ copy: build test haddock
 	cabal copy
 
 install:
-	# -ghc-pkg unregister argo
-	# -ghc-pkg unregister yops
+	-ghc-pkg unregister argo
+	-ghc-pkg unregister yops
 	cabal install --user --ghc-options=-Werror --enable-library-profiling --enable-executable-profiling --enable-tests
 
 sdist: clean configure

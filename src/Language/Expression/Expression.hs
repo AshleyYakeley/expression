@@ -1,6 +1,7 @@
 module Language.Expression.Expression where
 {
     import Import;
+    import Control.Category.Dual;
     import GHC.Exts(Constraint);
 
     data ConstraintWitness (constraint :: Constraint) where
@@ -58,9 +59,7 @@ module Language.Expression.Expression where
         MkConstraintWitness -> MkConstraintWitness;
     };
     
-    
-    newtype Opposite cc a b = MkOpposite (cc b a);
-    
+    -- could use data-lens:Control.Category.Product(Tensor)
     class Thing cc where
     {
         thingUnit :: cc () ();
@@ -73,10 +72,10 @@ module Language.Expression.Expression where
         thingPair ab1 ab2 (a1,a2) = (ab1 a1,ab2 a2);
     };
     
-    instance (Thing cc) => Thing (Opposite cc) where
+    instance (Thing cc) => Thing (Dual cc) where
     {
-        thingUnit = MkOpposite thingUnit;
-        thingPair (MkOpposite ab1) (MkOpposite ab2) = MkOpposite (thingPair ab1 ab2);
+        thingUnit = Dual thingUnit;
+        thingPair (Dual ab1) (Dual ab2) = Dual (thingPair ab1 ab2);
     };
     
     type MapWitness cc w1 w2 = forall r v1. w1 v1 -> (forall v2. w2 v2 -> (cc v1 v2) -> r) -> r;
@@ -254,10 +253,10 @@ module Language.Expression.Expression where
     };
 
     valueSymbolMap :: (Functor f) =>
-     MapWitness (Opposite (->)) wit1 wit2 -> ValueExpression wit1 f r -> ValueExpression wit2 f r;
+     MapWitness (Dual (->)) wit1 wit2 -> ValueExpression wit1 f r -> ValueExpression wit2 f r;
     valueSymbolMap mapwit (MkExpression wits fcvr) = case mapList mapwit wits of
     {
-        MkMapList wits' (MkOpposite mapvals) -> MkExpression wits' (fmap (\valsr -> valsr . mapvals) fcvr);
+        MkMapList wits' (Dual mapvals) -> MkExpression wits' (fmap (\valsr -> valsr . mapvals) fcvr);
     };
 
     valueSymbol :: (Applicative f) => wit val -> ValueExpression wit f val;

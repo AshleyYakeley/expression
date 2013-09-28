@@ -22,7 +22,8 @@ library
     build-depends:  
         base ==4.6.*,
         transformers >= 0.3,
-        witness == 0.2.*
+        witness == 0.2.*,
+        categories == 1.0.*
     extensions:         
         NoImplicitPrelude 
         RankNTypes
