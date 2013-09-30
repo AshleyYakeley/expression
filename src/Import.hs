@@ -10,7 +10,7 @@ module Import(module Import) where
     import Control.Category as Import;
     import Control.Applicative as Import;
     import Control.Monad as Import (Monad(..),MonadPlus(..));
-    
+
     -- transformers
     import Data.Functor.Identity as Import;
     import Data.Functor.Compose as Import;
@@ -19,4 +19,11 @@ module Import(module Import) where
     import Data.Witness.EqualType as Import;
     import Data.Witness.SimpleWitness as Import;
     import Data.Witness.List as Import;
+
+    -- categories
+    import Control.Category.Dual as Import;
+
+
+    -- constraints
+    import Data.Constraint as Import(Dict(..));
 }

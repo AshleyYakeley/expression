@@ -1,7 +1,7 @@
 name:                expression
 version:             0.1.0.0
 synopsis:            Functional expressions
--- description:         
+-- description:
 license:             BSD3
 license-file:        LICENSE
 author:              Ashley Yakeley
@@ -19,13 +19,14 @@ library
         Language.Expression.Regular
     other-modules:
         Import
-    build-depends:  
-        base ==4.6.*,
+    build-depends:
+        base == 4.6.*,
         transformers >= 0.3,
-        witness == 0.2.*,
-        categories == 1.0.*
-    extensions:         
-        NoImplicitPrelude 
+        witness == 0.3.*,
+        categories == 1.0.*,
+        constraints >= 0.3
+    extensions:
+        NoImplicitPrelude
         RankNTypes
         KindSignatures
         GADTs
@@ -34,5 +35,7 @@ library
         MultiParamTypeClasses
         FlexibleInstances
         TypeSynonymInstances
+        PolyKinds
+        DataKinds
     ghc-options: -Wall
 
