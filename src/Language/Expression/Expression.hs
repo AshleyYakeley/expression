@@ -13,6 +13,30 @@ module Language.Expression.Expression where
     witMap :: (forall a. wit1 a -> wit2 a) -> Expression combine wit1 f r -> Expression combine wit2 f r;
     witMap ww (MkExpression wits fcvr) = MkExpression (listTypeMap ww wits) fcvr;
 
+    data MergeValList wit v1 v2 v3 = MkMergeValList
+    {
+        valListWit1 :: ListType wit v1,
+        valListWit2 :: ListType wit v2,
+        valListWit3 :: ListType wit v3,
+        mergeValList :: (forall t. wit t -> t -> t -> t) -> v1 -> v2 -> v3,
+        unmergeValList :: v3 -> (v1,v2)
+    };
+
+    expressionJoin :: (SimpleWitness wit) =>
+     (forall v1 v2 v3. MergeValList wit v1 v2 v3 -> f1 (combine v1 r1) -> f2 (combine v2 r2) -> f3 (combine v3 r3)) ->
+     Expression combine wit f1 r1 -> Expression combine wit f2 r2 -> Expression combine wit f3 r3;
+    expressionJoin f (MkExpression wits1 f1vr1) (MkExpression wits2 f2vr2) = case mergeList wits1 wits2 of
+    {
+        MkMergeList wits3 merge unmerge -> MkExpression wits3 (f (MkMergeValList
+        {
+            valListWit1 = wits1,
+            valListWit2 = wits2,
+            valListWit3 = wits3,
+            mergeValList = merge,
+            unmergeValList = unmerge
+        }) f1vr1 f2vr2);
+    };
+
     type ValueExpression = Expression (->);
     type MatchExpression = Expression (,);
 
@@ -29,22 +53,19 @@ module Language.Expression.Expression where
     instance (Applicative f) => Applicative (ValueExpression wit f) where
     {
         pure a = MkExpression NilListType (pure (pure a));
-        (MkExpression wits1 fcvab) <*> (MkExpression wits2 fcva) = case witnessedListAppend wits1 wits2 of
+        (MkExpression wits1 fcvab) <*> (MkExpression wits2 fcva) = case appendList wits1 wits2 of
         {
-            Dict -> MkExpression (listAppendWitness wits1 wits2) (liftA2 (\v1ab v2a v12 -> case listSplit v12 of
+            MkAppendList wit _join split -> MkExpression wit (liftA2 (\v1ab v2a v12 -> case split v12 of
             {
                 (v1,v2) -> (v1ab v1) (v2a v2);
             }) fcvab fcva);
         }
     };
 
-    instance (Applicative f) => Applicative (MatchExpression wit f) where
+    instance (SimpleWitness wit,Applicative f) => Applicative (MatchExpression wit f) where
     {
         pure a = MkExpression NilListType (pure (pure a));
-        (MkExpression wits1 fcvab) <*> (MkExpression wits2 fcva) = case witnessedListAppend wits1 wits2 of
-        {
-            Dict -> MkExpression (listAppendWitness wits1 wits2) (liftA2 (\(v1,ab) (v2,a) -> (listJoin v1 v2,ab a)) fcvab fcva);
-        }
+        (<*>) = expressionJoin (\mvl fcvab fcva -> liftA2 (\(v1,ab) (v2,a) -> (mergeValList mvl (\_ v _ -> v) v1 v2,ab a)) fcvab fcva);
     };
 
     valueSymbolMap :: (Functor f) =>
@@ -83,10 +104,10 @@ module Language.Expression.Expression where
     matchSimple :: (Functor f) => f r -> MatchExpression wit f r;
     matchSimple fr = MkExpression NilListType (fmap (\r -> ((),r)) fr);
 
-    matchBoth :: (Applicative f) => MatchExpression wit f () -> MatchExpression wit f () -> MatchExpression wit f ();
+    matchBoth :: (SimpleWitness wit,Applicative f) => MatchExpression wit f () -> MatchExpression wit f () -> MatchExpression wit f ();
     matchBoth = liftA2 (\_ _ -> ());
 
-    matchAll :: (Applicative f) => [MatchExpression wit f ()] -> MatchExpression wit f ();
+    matchAll :: (SimpleWitness wit,Applicative f) => [MatchExpression wit f ()] -> MatchExpression wit f ();
     matchAll [] = pure ();
     matchAll (exp:exps) = matchBoth exp (matchAll exps);
 
@@ -105,6 +126,26 @@ module Language.Expression.Expression where
 
     pattern :: (Functor ff) => (q -> ff r) -> PatternExpression wit ff q r;
     pattern qmr = matchSimple (Compose qmr);
+
+    patternExpressionJoin :: (SimpleWitness wit) =>
+     (forall v1 v2 v3. MergeValList wit v1 v2 v3 -> (q1 -> ff1 (v1,r1)) -> (q2 -> ff2 (v2,r2)) -> (q3 -> ff3 (v3,r3))) ->
+     PatternExpression wit ff1 q1 r1 -> PatternExpression wit ff2 q2 r2 -> PatternExpression wit ff3 q3 r3;
+    patternExpressionJoin f = expressionJoin (\mvl (Compose qffvr1) (Compose qffvr2) -> Compose (f mvl qffvr1 qffvr2));
+
+    patternBoth :: (SimpleWitness wit,Applicative ff) =>
+     PatternExpression wit ff q r1 -> PatternExpression wit ff q r2 -> PatternExpression wit ff q (r1,r2);
+    patternBoth = patternExpressionJoin (\mvl qffvr1 qffvr2 q ->
+      liftA2 (\(v1,r1) (v2,r2) -> (mergeValList mvl (\_ v _ -> v) v1 v2,(r1,r2))) (qffvr1 q) (qffvr2 q)
+    );
+
+    patternFilter :: (Monad ff) => (a -> ff b) -> PatternExpression wit ff t a -> PatternExpression wit ff t b;
+    patternFilter affb (MkExpression wits (Compose qffva)) =
+     MkExpression wits (Compose (\q -> do
+        {
+            (v,a) <- qffva q;
+            b <- affb a;
+            return (v,b);
+        }));
 
     patternNever :: (MonadPlus ff,Applicative ff) => PatternExpression wit ff q r;
     patternNever = pattern (\_ -> mzero);
@@ -128,24 +169,20 @@ module Language.Expression.Expression where
     mapList :: (forall r v1. w1 v1 -> (forall v2. w2 v2 -> (v1 -> v2) -> r) -> r) -> ListType w1 l -> MapList w1 w2 l;
 -}
 
-    composePattern :: (Monad ff) =>
+    composePattern :: (SimpleWitness wit,Monad ff) =>
      PatternExpression wit ff q r -> PatternExpression wit ff p q -> PatternExpression wit ff p r;
-    composePattern (MkExpression wits1 (Compose qmv1r)) (MkExpression wits2 (Compose pmv2q)) =
-     case witnessedListAppend wits1 wits2 of
+    composePattern = patternExpressionJoin (\mvl qmv1r pmv2q p -> do
     {
-        Dict -> MkExpression (listAppendWitness wits1 wits2) (Compose (\p -> do
-        {
-            (vals2,q) <- pmv2q p;
-            (vals1,r) <- qmv1r q;
-            return (listJoin vals1 vals2,r);
-        }));
-    };
+        (vals2,q) <- pmv2q p;
+        (vals1,r) <- qmv1r q;
+        return (mergeValList mvl (\_ v _ -> v) vals1 vals2,r);
+    });
 
-    subPattern :: (Monad ff,Applicative ff) =>
+    subPattern :: (SimpleWitness wit,Monad ff,Applicative ff) =>
      (q -> ff p) -> PatternExpression wit ff p r -> PatternExpression wit ff q r;
     subPattern qmp patp = composePattern patp (pattern qmp);
 
-    patternMatchPair :: (Monad ff,Applicative ff) =>
+    patternMatchPair :: (SimpleWitness wit,Monad ff,Applicative ff) =>
      PatternExpression wit ff p () -> PatternExpression wit ff q () -> PatternExpression wit ff (p,q) ();
     patternMatchPair patp patq = matchBoth (subPattern (return . fst) patp) (subPattern (return . snd) patq);
 }

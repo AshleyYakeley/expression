@@ -33,6 +33,7 @@ library
         ConstraintKinds
         TypeFamilies
         MultiParamTypeClasses
+        FlexibleContexts
         FlexibleInstances
         TypeSynonymInstances
         PolyKinds
