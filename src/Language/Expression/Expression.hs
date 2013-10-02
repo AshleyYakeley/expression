@@ -22,6 +22,9 @@ module Language.Expression.Expression where
         unmergeValList :: v3 -> (v1,v2)
     };
 
+    expressionMapFunctor :: (forall a. f1 a -> f2 a) -> Expression combine wit f1 r -> Expression combine wit f2 r;
+    expressionMapFunctor ff (MkExpression wits f1cvr) = MkExpression wits (ff f1cvr);
+
     expressionJoin :: (SimpleWitness wit) =>
      (forall v1 v2 v3. MergeValList wit v1 v2 v3 -> f1 (combine v1 r1) -> f2 (combine v2 r2) -> f3 (combine v3 r3)) ->
      Expression combine wit f1 r1 -> Expression combine wit f2 r2 -> Expression combine wit f3 r3;
@@ -138,17 +141,21 @@ module Language.Expression.Expression where
       liftA2 (\(v1,r1) (v2,r2) -> (mergeValList mvl (\_ v _ -> v) v1 v2,(r1,r2))) (qffvr1 q) (qffvr2 q)
     );
 
-    patternFilter :: (Monad ff) => (a -> ff b) -> PatternExpression wit ff t a -> PatternExpression wit ff t b;
-    patternFilter affb (MkExpression wits (Compose qffva)) =
+    patternFilter :: (Monad ff) => (q -> a -> ff b) -> PatternExpression wit ff q a -> PatternExpression wit ff q b;
+    patternFilter qaffb (MkExpression wits (Compose qffva)) =
      MkExpression wits (Compose (\q -> do
         {
             (v,a) <- qffva q;
-            b <- affb a;
+            b <- qaffb q a;
             return (v,b);
         }));
 
     patternNever :: (MonadPlus ff,Applicative ff) => PatternExpression wit ff q r;
     patternNever = pattern (\_ -> mzero);
+
+    patternMapFunctor :: (forall a. ff1 a -> ff2 a) -> PatternExpression wit ff1 q r -> PatternExpression wit ff2 q r;
+    patternMapFunctor ff = expressionMapFunctor (\(Compose qffa) -> Compose (fmap ff qffa));
+
 {-
     expressionSymbol :: (q -> ff ((val,()),r)) -> wit val -> PatternExpression wit ff q r;
     expressionSymbol' :: (q -> ff (val,r)) -> wit val -> PatternExpression wit ff q r;

@@ -21,12 +21,6 @@ module Language.Expression.Regular where
 
     regexEmpty :: RegularExpression wit t;
     regexEmpty = pattern (\_ -> [0]);
-{-
-    patternExpressionJoin ::
-     (forall v. wit v -> v -> v -> v) ->
-     (forall v1 v2 v3. (v1 -> v2 -> v3) -> (t -> [(v1,Int)]) -> (t -> [(v2,Int)]) -> (t -> [(v3,Int)])) ->
-     RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
--}
 
     regexConcat :: (SimpleWitness wit) =>
      (forall val. wit val -> val -> val -> val) -> RegularExpression wit [c] -> RegularExpression wit [c] -> RegularExpression wit [c];
@@ -55,7 +49,7 @@ module Language.Expression.Regular where
     regexStar vnil vcons r = regexAlternate vnil (regexConcat vcons r (regexStar vnil vcons r)) regexEmpty;
 
     regexParallel :: (SimpleWitness wit,Eq t) => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
-    regexParallel r1 r2 = patternFilter (\(t1,t2) -> if t1 == t2 then [t1] else []) (patternBoth r1 r2);
+    regexParallel r1 r2 = patternFilter (\_ (t1,t2) -> if t1 == t2 then [t1] else []) (patternBoth r1 r2);
 
     regexImpossible :: RegularExpression wit t;
     regexImpossible = patternNever;
@@ -64,7 +58,7 @@ module Language.Expression.Regular where
     regexAnything = undefined;
 -}
     regexSymbol :: (t -> val) -> wit val -> RegularExpression wit t;
-    regexSymbol = undefined;
+    regexSymbol _ _ = undefined;
 
     regexText :: (Eq c) => [c] -> RegularExpression wit [c];
     regexText text = pattern (\s -> case startsWith text s of
@@ -79,4 +73,14 @@ module Language.Expression.Regular where
         (_:_) -> [1];
         _ -> [];
     });
+
+    regexAll :: RegularExpression wit [c] -> PatternExpression wit [] [c] ();
+    regexAll = patternFilter (\t a -> if a == length t then [()] else []);
+
+    firstItem :: [a] -> Maybe a;
+    firstItem (a:_) = Just a;
+    firstItem [] = Nothing;
+
+    regexSingle :: RegularExpression wit [c] -> PatternExpression wit Maybe [c] ();
+    regexSingle = patternMapFunctor firstItem . regexAll;
 }

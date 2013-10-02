@@ -2,6 +2,7 @@ module Language.Expression.Mono where
 {
     import Import;
     import Language.Expression.Expression;
+    import Language.Expression.Regular;
 
     -- monomorphic symbols, representing type val
 
@@ -18,6 +19,7 @@ module Language.Expression.Mono where
 
     type MonoValueExpression sym val = ValueExpression (MonoSymbol sym val);
     type MonoPatternExpression sym val ff q = PatternExpression (MonoSymbol sym val) ff q;
+    type MonoRegularExpression sym val t = RegularExpression (MonoSymbol sym val) t;
 
     monoWitMap :: (sym1 -> sym2) ->
      Expression combine (MonoSymbol sym1 val) f r -> Expression combine (MonoSymbol sym2 val) f r;
