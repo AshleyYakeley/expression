@@ -2,7 +2,7 @@ module Language.Expression.Regular where
 {
     import Import;
     import Data.List(length,drop,(++));
-    import Prelude(undefined,Int,Num(..));
+    import Prelude(undefined,Int,Num(..),Ord(..));
     import Language.Expression.Expression;
 
     type RegularExpression wit t = PatternExpression wit [] t Int;
@@ -38,15 +38,35 @@ module Language.Expression.Regular where
         vmap = mergeValList mvl (\_ v _ -> v);
         matches1 = exp1 t;
         matches2 = exp2 t;
-        nullv1 = listFill nullValue (valListWit1 mvl);
-        nullv2 = listFill nullValue (valListWit2 mvl);
+        nullv1 = listFill (valListWit1 mvl) nullValue;
+        nullv2 = listFill (valListWit2 mvl) nullValue;
         m1 = fmap (\(v1,l1) -> (vmap v1 nullv2,l1)) matches1;
         m2 = fmap (\(v2,l1) -> (vmap nullv1 v2,l1)) matches2
     } in m1 ++ m2);
 
-    regexStar :: (SimpleWitness wit) =>
-    (forall val. wit val -> val) -> (forall val. wit val -> val -> val -> val) -> RegularExpression wit [c] -> RegularExpression wit [c];
-    regexStar vnil vcons r = regexAlternate vnil (regexConcat vcons r (regexStar vnil vcons r)) regexEmpty;
+    regexRepeat :: (SimpleWitness wit) =>
+    Int -> Maybe Int ->
+    (forall val. wit val -> val) -> (forall val. wit val -> val -> val -> val) ->
+    RegularExpression wit [c] -> RegularExpression wit [c];
+    regexRepeat min' mmax' vnil vcons (MkExpression wits (Compose tlvi)) = MkExpression wits (Compose (let
+    {
+        matchEmpty = return (listFill wits vnil,0);
+
+        matchOne th t = do
+        {
+            (va,i) <- tlvi t;
+            (vrest,i') <- th (drop i t);
+            return (listLift2 wits vcons va vrest,i + i');
+        };
+
+        thing 0 (Just 0) _t = matchEmpty;
+        thing 0 (Just n) _t | n < 0 = mzero;
+        thing 0 (Just n) t = mplus (matchOne (thing 0 (Just (n - 1))) t) matchEmpty;
+        thing 0 Nothing t = mplus (matchOne (thing 0 Nothing) t) matchEmpty;
+        thing minr mextra t = matchOne (thing (minr - 1) mextra) t;
+    } in thing min' (fmap (\max' -> max' - min') mmax')));
+
+    -- regexAlternate vnil (regexConcat vcons r (regexStar vnil vcons r)) regexEmpty;
 
     regexParallel :: (SimpleWitness wit,Eq t) => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
     regexParallel r1 r2 = patternFilter (\_ (t1,t2) -> if t1 == t2 then [t1] else []) (patternBoth r1 r2);
