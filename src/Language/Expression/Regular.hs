@@ -1,7 +1,7 @@
 module Language.Expression.Regular where
 {
     import Import;
-    import Data.List(length,drop,(++));
+    import Data.List(length,take,drop,(++));
     import Prelude(undefined,Int,Num(..),Ord(..));
     import Language.Expression.Expression;
 
@@ -73,12 +73,18 @@ module Language.Expression.Regular where
 
     regexImpossible :: RegularExpression wit t;
     regexImpossible = patternNever;
-{-
-    regexAnything :: RegularExpression wit t;
-    regexAnything = undefined;
--}
-    regexSymbol :: (t -> val) -> wit val -> RegularExpression wit t;
-    regexSymbol _ _ = undefined;
+
+    regexAnything :: RegularExpression wit [c];
+    regexAnything = pattern (\t -> allCounts (length t)) where
+    {
+        allCounts 0 = [0];
+        allCounts n = n:(allCounts (n - 1));
+    };
+
+    regexSymbol :: ([c] -> val) -> wit val -> RegularExpression wit [c] -> RegularExpression wit [c];
+    regexSymbol toval wit (MkExpression wits (Compose tlvi)) = MkExpression (ConsListType wit wits) (Compose (\t ->
+        fmap (\(v,i) -> ((toval (take i t),v),i)) (tlvi t)
+    ));
 
     regexText :: (Eq c) => [c] -> RegularExpression wit [c];
     regexText text = pattern (\s -> case startsWith text s of
