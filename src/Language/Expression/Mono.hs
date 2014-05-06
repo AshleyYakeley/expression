@@ -34,7 +34,7 @@ module Language.Expression.Mono where
     monoPatternSymbolMap :: (val1 -> val2) -> MonoPatternExpression sym val1 ff q r -> MonoPatternExpression sym val2 ff q r;
     monoPatternSymbolMap
 -}
-    monoLetBind :: (SimpleWitness wit,Eq sym,Applicative f) =>
+    monoLetBind :: (Eq sym,Applicative f) =>
      sym -> MonoValueExpression sym val f val -> MonoValueExpression sym val f r -> MonoValueExpression sym val f r;
     monoLetBind sym = letBind (MkMonoSymbol sym);
 

@@ -2,7 +2,7 @@ module Language.Expression.Regular where
 {
     import Import;
     import Data.List(length,take,drop,(++));
-    import Prelude(undefined,Int,Num(..),Ord(..));
+    import Prelude(Int,Num(..),Ord(..));
     import Language.Expression.Expression;
 
     type RegularExpression wit t = PatternExpression wit [] t Int;

@@ -20,9 +20,6 @@ module Import(module Import) where
     import Data.Witness.SimpleWitness as Import;
     import Data.Witness.List as Import;
 
-    -- categories
-    import Control.Category.Dual as Import;
-
 
     -- constraints
     import Data.Constraint as Import(Dict(..));

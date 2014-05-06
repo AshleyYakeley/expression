@@ -20,11 +20,10 @@ library
     other-modules:
         Import
     build-depends:
-        base == 4.6.*,
-        transformers >= 0.3,
-        witness == 0.3.*,
-        categories == 1.0.*,
-        constraints >= 0.3
+        base,
+        transformers,
+        witness,
+        constraints
     extensions:
         NoImplicitPrelude
         RankNTypes
