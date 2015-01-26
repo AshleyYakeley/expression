@@ -23,6 +23,7 @@ library
         base,
         transformers,
         witness,
+        categories,
         constraints
     extensions:
         NoImplicitPrelude

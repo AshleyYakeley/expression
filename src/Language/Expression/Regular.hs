@@ -22,7 +22,7 @@ module Language.Expression.Regular where
     regexEmpty :: RegularExpression wit t;
     regexEmpty = pattern (\_ -> [0]);
 
-    regexConcat :: (SimpleWitness wit) =>
+    regexConcat :: (TestEquality wit) =>
      (forall val. wit val -> val -> val -> val) -> RegularExpression wit [c] -> RegularExpression wit [c] -> RegularExpression wit [c];
     regexConcat pickVal = patternExpressionJoin (\mvl exp1 exp2 t -> do
     {
@@ -31,7 +31,7 @@ module Language.Expression.Regular where
         return (mergeValList mvl pickVal v1 v2,l1 + l2);
     });
 
-    regexAlternate :: (SimpleWitness wit) =>
+    regexAlternate :: (TestEquality wit) =>
      (forall val. wit val -> val) -> RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
     regexAlternate nullValue = patternExpressionJoin (\mvl exp1 exp2 t -> let
     {
@@ -44,7 +44,7 @@ module Language.Expression.Regular where
         m2 = fmap (\(v2,l1) -> (vmap nullv1 v2,l1)) matches2
     } in m1 ++ m2);
 
-    regexRepeat :: (SimpleWitness wit) =>
+    regexRepeat :: (TestEquality wit) =>
     Int -> Maybe Int ->
     (forall val. wit val -> val) -> (forall val. wit val -> val -> val -> val) ->
     RegularExpression wit [c] -> RegularExpression wit [c];
@@ -68,7 +68,7 @@ module Language.Expression.Regular where
 
     -- regexAlternate vnil (regexConcat vcons r (regexStar vnil vcons r)) regexEmpty;
 
-    regexParallel :: (SimpleWitness wit,Eq t) => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
+    regexParallel :: (TestEquality wit,Eq t) => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
     regexParallel r1 r2 = patternFilter (\_ (t1,t2) -> if t1 == t2 then [t1] else []) (patternBoth r1 r2);
 
     regexImpossible :: RegularExpression wit t;

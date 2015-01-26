@@ -11,10 +11,10 @@ module Language.Expression.Mono where
         MkMonoSymbol :: sym -> MonoSymbol sym val val;
     };
 
-    instance (Eq sym) => SimpleWitness (MonoSymbol sym val) where
+    instance (Eq sym) => TestEquality (MonoSymbol sym val) where
     {
-        matchWitness (MkMonoSymbol sym1) (MkMonoSymbol sym2) | sym1 == sym2 = Just MkEqualType;
-        matchWitness _ _ = Nothing;
+        testEquality (MkMonoSymbol sym1) (MkMonoSymbol sym2) | sym1 == sym2 = Just Refl;
+        testEquality _ _ = Nothing;
     };
 
     type MonoValueExpression sym val = ValueExpression (MonoSymbol sym val);

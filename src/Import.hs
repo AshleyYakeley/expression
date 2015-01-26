@@ -10,16 +10,18 @@ module Import(module Import) where
     import Control.Category as Import;
     import Control.Applicative as Import;
     import Control.Monad as Import (Monad(..),MonadPlus(..));
+    import Data.Proxy as Import;
+    import Data.Type.Equality as Import hiding (sym);
 
     -- transformers
     import Data.Functor.Identity as Import;
     import Data.Functor.Compose as Import;
 
     -- witness
-    import Data.Witness.EqualType as Import;
-    import Data.Witness.SimpleWitness as Import;
     import Data.Witness.List as Import;
-
+ 
+    -- categories
+    import Control.Category.Dual as Import;
 
     -- constraints
     import Data.Constraint as Import(Dict(..));
