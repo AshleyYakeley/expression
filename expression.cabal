@@ -1,31 +1,23 @@
-name:                expression
-version:             0.1.0.0
-synopsis:            Functional expressions
+cabal-version:  >=1.14
+name:           expression
+version:        0.1.0.0
+x-follows-version-policy:
+license:        BSD3
+license-file:   LICENSE
+copyright:      Ashley Yakeley <ashley@semantic.org>
+author:         Ashley Yakeley <ashley@semantic.org>
+maintainer:     Ashley Yakeley <ashley@semantic.org>
+homepage:       https://github.com/AshleyYakeley/expression
+bug-reports:    https://github.com/AshleyYakeley/expression/issues
+synopsis:       Functional expressions
 -- description:
-license:             BSD3
-license-file:        LICENSE
-author:              Ashley Yakeley
-maintainer:          Ashley Yakeley <ashley@semantic.org>
-copyright:           Ashley Yakeley
-category:            Language
-build-type:          Simple
-cabal-version:       >=1.8
+category:       Language
+build-type:     Simple
 
 library
     hs-source-dirs: src
-    exposed-modules:
-        Language.Expression.Expression
-        Language.Expression.Mono
-        Language.Expression.Regular
-    other-modules:
-        Import
-    build-depends:
-        base,
-        transformers,
-        witness,
-        categories,
-        constraints
-    extensions:
+    default-language: Haskell2010
+    default-extensions:
         NoImplicitPrelude
         RankNTypes
         KindSignatures
@@ -38,5 +30,16 @@ library
         TypeSynonymInstances
         PolyKinds
         DataKinds
+    exposed-modules:
+        Language.Expression.Expression
+        Language.Expression.Mono
+        Language.Expression.Regular
+    other-modules:
+        Import
+    build-depends:
+        base,
+        transformers,
+        witness,
+        categories,
+        constraints
     ghc-options: -Wall
-
