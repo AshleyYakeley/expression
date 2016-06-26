@@ -19,9 +19,9 @@ module Import(module Import) where
 
     -- witness
     import Data.Witness.List as Import;
- 
+
     -- categories
-    import Control.Category.Dual as Import;
+    import Data.Semigroupoid.Dual as Import;
 
     -- constraints
     import Data.Constraint as Import(Dict(..));

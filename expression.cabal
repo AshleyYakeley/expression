@@ -40,6 +40,6 @@ library
         base,
         transformers,
         witness,
-        categories,
+        semigroupoids,
         constraints
     ghc-options: -Wall
