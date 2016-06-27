@@ -1,3 +1,6 @@
+#if __GLASGOW_HASKELL__ >= 800
+{-# OPTIONS -Wno-redundant-constraints #-}
+#endif
 module Language.Expression.Expression where
 {
     import Import;

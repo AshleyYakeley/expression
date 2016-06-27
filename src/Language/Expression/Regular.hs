@@ -44,7 +44,7 @@ module Language.Expression.Regular where
         m2 = fmap (\(v2,l1) -> (vmap nullv1 v2,l1)) matches2
     } in m1 ++ m2);
 
-    regexRepeat :: (TestEquality wit) =>
+    regexRepeat ::
     Int -> Maybe Int ->
     (forall val. wit val -> val) -> (forall val. wit val -> val -> val -> val) ->
     RegularExpression wit [c] -> RegularExpression wit [c];
@@ -68,7 +68,7 @@ module Language.Expression.Regular where
 
     -- regexAlternate vnil (regexConcat vcons r (regexStar vnil vcons r)) regexEmpty;
 
-    regexParallel :: (TestEquality wit,Eq t) => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
+    regexParallel :: TestEquality wit => RegularExpression wit t -> RegularExpression wit t -> RegularExpression wit t;
     regexParallel r1 r2 = patternFilter (\_ (t1,t2) -> if t1 == t2 then [t1] else []) (patternBoth r1 r2);
 
     regexImpossible :: RegularExpression wit t;
