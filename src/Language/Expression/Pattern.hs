@@ -8,7 +8,7 @@ module Language.Expression.Pattern where
 
     type PatternExpression wit ff q = MatchExpression wit (Compose ((->) q) ff);
 
-    pattern :: (Functor ff) => (q -> ff r) -> PatternExpression wit ff q r;
+    pattern :: Functor ff => (q -> ff r) -> PatternExpression wit ff q r;
     pattern qmr = matchSimple (Compose qmr);
 
     patternExpressionJoin :: (TestEquality wit) =>
@@ -22,7 +22,7 @@ module Language.Expression.Pattern where
       liftA2 (\(v1,r1) (v2,r2) -> (mergeValList mvl (\_ v _ -> v) v1 v2,(r1,r2))) (qffvr1 q) (qffvr2 q)
     );
 
-    patternFilter :: (Monad ff) => (q -> a -> ff b) -> PatternExpression wit ff q a -> PatternExpression wit ff q b;
+    patternFilter :: Monad ff => (q -> a -> ff b) -> PatternExpression wit ff q a -> PatternExpression wit ff q b;
     patternFilter qaffb (MkExpression wits (Compose qffva)) =
      MkExpression wits (Compose (\q -> do
         {
@@ -31,8 +31,8 @@ module Language.Expression.Pattern where
             return (v,b);
         }));
 
-    patternNever :: (MonadPlus ff,Applicative ff) => PatternExpression wit ff q r;
-    patternNever = pattern (\_ -> mzero);
+    patternNever :: Alternative ff => PatternExpression wit ff q r;
+    patternNever = pattern (\_ -> empty);
 
     patternMapFunctor :: (forall a. ff1 a -> ff2 a) -> PatternExpression wit ff1 q r -> PatternExpression wit ff2 q r;
     patternMapFunctor ff = expressionMapFunctor (\(Compose qffa) -> Compose (fmap ff qffa));
@@ -45,13 +45,13 @@ module Language.Expression.Pattern where
     patternAddSymbol :: (Applicative ff) => wit val -> PatternExpression wit ff val r -> PatternExpression wit ff val r;
     patternAddSymbol = expressionSymbol (Compose (\val -> pure ((val,()),())));
 -}
-    patternSymbol :: (Applicative ff) => wit val -> PatternExpression wit ff val ();
+    patternSymbol :: Applicative ff => wit val -> PatternExpression wit ff val ();
     patternSymbol = expressionSymbol (Compose (\val -> pure ((val,()),())));
 
-    patternMatch :: (MonadPlus ff,Applicative ff) => (q -> Bool) -> PatternExpression wit ff q ();
-    patternMatch qb = pattern (\q -> if qb q then return () else mzero);
+    patternMatch :: Alternative ff => (q -> Bool) -> PatternExpression wit ff q ();
+    patternMatch qb = pattern (\q -> if qb q then pure () else empty);
 
-    patternMatchEq :: (MonadPlus ff,Applicative ff,Eq q) => q -> PatternExpression wit ff q ();
+    patternMatchEq :: (Alternative ff,Eq q) => q -> PatternExpression wit ff q ();
     patternMatchEq q = patternMatch ((==) q);
 {-
     mapList :: (forall r v1. w1 v1 -> (forall v2. w2 v2 -> (v1 -> v2) -> r) -> r) -> ListType w1 l -> MapList w1 w2 l;
@@ -66,11 +66,11 @@ module Language.Expression.Pattern where
         return (mergeValList mvl (\_ v _ -> v) vals1 vals2,r);
     });
 
-    subPattern :: (TestEquality wit,Monad ff,Applicative ff) =>
+    subPattern :: (TestEquality wit,Monad ff) =>
      (q -> ff p) -> PatternExpression wit ff p r -> PatternExpression wit ff q r;
     subPattern qmp patp = composePattern patp (pattern qmp);
 
-    patternMatchPair :: (TestEquality wit,Monad ff,Applicative ff) =>
+    patternMatchPair :: (TestEquality wit,Monad ff) =>
      PatternExpression wit ff p () -> PatternExpression wit ff q () -> PatternExpression wit ff (p,q) ();
     patternMatchPair patp patq = matchBoth (subPattern (return . fst) patp) (subPattern (return . snd) patq);
 }

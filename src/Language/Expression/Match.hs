@@ -22,8 +22,7 @@ module Language.Expression.Match where
     matchBoth = liftA2 (\_ _ -> ());
 
     matchAll :: (TestEquality wit,Applicative f) => [MatchExpression wit f ()] -> MatchExpression wit f ();
-    matchAll [] = pure ();
-    matchAll (exp:exps) = matchBoth exp (matchAll exps);
+    matchAll = sequenceA_;
 
     matchSymbolMap :: (Functor f) =>
      MapWitness (->) wit1 wit2 -> MatchExpression wit1 f r -> MatchExpression wit2 f r;

@@ -6,6 +6,7 @@ module Import(module Import) where
     import Data.Maybe as Import;
     import Data.Either as Import;
     import Data.Tuple as Import;
+    import Data.Foldable as Import;
     import Data.Functor as Import;
     import Control.Category as Import;
     import Control.Applicative as Import;
