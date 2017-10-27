@@ -4,6 +4,8 @@ module Language.Expression.Regular where
     import Data.List(length,take,drop,(++));
     import Prelude(Int,Num(..),Ord(..));
     import Language.Expression.Expression;
+    import Language.Expression.Pattern;
+
 
     type RegularExpression wit t = PatternExpression wit [] t Int;
 

@@ -33,6 +33,9 @@ library
         DataKinds
     exposed-modules:
         Language.Expression.Expression
+        Language.Expression.Value
+        Language.Expression.Match
+        Language.Expression.Pattern
         Language.Expression.Mono
         Language.Expression.Regular
     other-modules:

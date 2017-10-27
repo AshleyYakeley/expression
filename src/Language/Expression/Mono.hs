@@ -2,7 +2,11 @@ module Language.Expression.Mono where
 {
     import Import;
     import Language.Expression.Expression;
+    import Language.Expression.Value;
+    import Language.Expression.Match;
+    import Language.Expression.Pattern;
     import Language.Expression.Regular;
+
 
     -- monomorphic symbols, representing type val
 
