@@ -38,6 +38,7 @@ library
         Language.Expression.Pattern
         Language.Expression.Mono
         Language.Expression.Regular
+        Language.Expression
     other-modules:
         Import
     build-depends:
